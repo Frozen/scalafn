@@ -1,0 +1,6 @@
+*.pyc
+.DS_Store
+text.txt
+run2.py
+run.py
+.idea
