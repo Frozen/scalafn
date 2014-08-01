@@ -21,7 +21,7 @@ class TestFunctional(TestCase):
     def test_repr(self):
 
         self.assertEqual("List(1, 2, 3)", repr(List(1, 2, 3)))
-        self.assertEqual("ListGenerator(i for i in [1, 2, 3])", repr(List(1, 2, 3).map(_*1)))
+        self.assertEqual(repr(List(1, 2, 3)), repr(List(1, 2, 3).toStream()))
 
         # self.assertEqual("""List('1', '2', '3')""", repr(List("1", "2", "3")))
         # self.assertEqual("""ListGenerator(i for i in ['1', '2', '3'])""", repr(List('1', "2", '3').map(_*1)))
