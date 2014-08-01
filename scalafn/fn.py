@@ -1,5 +1,5 @@
 from functools import partial, wraps
-from scalafn import Underscore
+from scalafn import Underscore, MethodUnderscore
 
 
 __isinstance = isinstance
@@ -18,13 +18,21 @@ def _fn(f):
                 _args = list(args)
                 for index, arg in enumerate(_args):
                     if __isinstance(arg, Underscore):
+                        if __isinstance(arg, MethodUnderscore):
+                            underscore_param = arg(underscore_param)
                         _args[index] = underscore_param
-                        return f(*_args, **kwargs)
+                        # print("underscore_wrapper ", f, _args)
+                        rs = f(*_args, **kwargs)
+                        # print("rs call unserscore", rs)
+                        return rs
                 _kwargs = kwargs.copy()
                 for index in _kwargs:
                     if __isinstance(_kwargs[index], Underscore):
+                        if __isinstance(_kwargs[index], MethodUnderscore):
+                            underscore_param = _kwargs[index](underscore_param)
                         _kwargs[index] = underscore_param
                         return f(*_args, **_kwargs)
+                # print("underscore_wrapper ", f, _args, _kwargs)
                 return f(*_args, **_kwargs)
             return underscore_call
         else:

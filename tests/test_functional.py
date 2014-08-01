@@ -16,6 +16,7 @@ class TestFunctional(TestCase):
         self.assertEqual(List(1, 2, 3).toList(), [1, 2, 3])
         self.assertEqual(List(), [])
         self.assertEqual(True, isinstance(List(), list))
+        self.assertEqual([True], List(True).toStream())
 
     def test_repr(self):
 
@@ -158,14 +159,32 @@ class TestUnderscore(TestCase):
         self.assertEqual(2, len(List(1, 2).toStream()))
         self.assertEqual(2, List(1, 2).toStream().length())
 
-    def test_call_undefined_properties(self):
+
+class TestUnderscoreAttributesCall(TestCase):
+
+    def setUp(self):
 
         class Inner():
-            def __init__(self, a):
+            def __init__(self, a=None):
                 self.a = a
+
+            def get_a(self):
+                return self.a
+
+            def set_a(self, a):
+                self.a = a
+
+            def set_and_get(self, a):
+                return a
 
             def __eq__(self, other):
                 return self.a == other.a
+
+        self.Inner = Inner
+
+    def test_call_undefined_properties(self):
+
+        Inner = self.Inner
 
         self.assertEqual(Inner(True), Inner(True))
 
@@ -176,24 +195,34 @@ class TestUnderscore(TestCase):
         with self.assertRaises(TypeError):
             self.assertEqual(List(Inner(True)), List(*init).filter(_.a == True).toList())
 
+    def test_call_undefined_methods_1(self):
 
-    def test_call_undefined_methods(self):
-
-        class Inner():
-            def __init__(self, a):
-                self.a = a
-
-            def get_a(self):
-                return self.a
-
-            def set_a(self, a):
-                self.a = a
-
-            def __eq__(self, other):
-                return self.a == other.a
+        Inner = self.Inner
 
         init = List(Inner(1), Inner(2))
+
+        self.assertEqual(1, _.get_a()(Inner(1)))
+        self.assertEqual(List(Inner(2)), List(*init).filter(_.get_a() > 1).toList())
         self.assertEqual(List(Inner(2)), List(*init).filter(fn.eq(_.get_a(), 2)).toList())
+        self.assertEqual(List(Inner(1), Inner(True)), List(Inner(1), Inner(True)).filter(fn.isinstance(_.get_a(), int)).toList())
+
+    def test_call_undefined_methods_2(self):
+
+        Inner = self.Inner
+
+        self.assertEqual(List(1), List(Inner()).map(_.set_and_get(a=1)).toList())
+        self.assertEqual(List(1), List(Inner()).map(_.set_and_get(1)).toList())
+        self.assertEqual(List(2), List(Inner()).map(_.set_and_get(2)).toList())
+        with self.assertRaises(TypeError):
+            self.assertEqual(List(2), List(Inner()).map(_.get_a(b=2)).toList())
+
+    def test_call_undefined_methods_3(self):
+        Inner = self.Inner
+
+        self.assertEqual(List(1), List(Inner(1)).map(_.get_a()>0))
+        self.assertEqual(List(1), List(Inner(2)).map(_.get_a()>=0))
+        self.assertEqual(List(1), List(Inner(3)).map(_.get_a()<=1))
+        self.assertEqual(List(1), List(Inner(3)).map(_.get_a()<2))
 
 
 class TestFunctions(TestCase):
@@ -203,7 +232,7 @@ class TestFunctions(TestCase):
         # isinstance = underscore_wrapper(isinstance)
         self.assertTrue(fn.isinstance(_, int)(1))
         self.assertTrue(fn.isinstance(1, _)(int))
-        self.assertEqual([1, 2], List(1, 2, '3').filter(fn.isinstance(_, int)).toList())
+        self.assertEqual([1, 2], List(1, 2, '3').filter(fn.isinstance(_, int)))
 
     def test_len(self):
 
@@ -217,7 +246,7 @@ class TestFunctions(TestCase):
         self.assertEqual([0, 1, 2], List("", "2", "33").toStream().map(fn.len))
         self.assertEqual([0, 1, 2], List("", "2", "33").toStream().map(fn.len(_)))
 
-
+        self.assertEqual(['1'], List('1', '').filter(fn.len))
 
     def test_eq(self):
 
@@ -225,11 +254,11 @@ class TestFunctions(TestCase):
         self.assertTrue(fn.eq(_, 1)(1))
         self.assertTrue(fn.eq(1, _)(1))
         self.assertEqual([True, False], List(1, 2).map(fn.eq(_, 1)))
-        # self.assertEqual([1, 2, 3], List([1], [1, 1], [1, 1, 1]).map(fn.len))
+        self.assertEqual([1, 2, 3], List([1], [1, 1], [1, 1, 1]).map(fn.len))
         #
-        # self.assertEqual([0, 1, 2], List("", "2", "33").toStream().map(len))
-        # self.assertEqual([0, 1, 2], List("", "2", "33").toStream().map(fn.len))
-        # self.assertEqual([0, 1, 2], List("", "2", "33").toStream().map(fn.len(_)))
+        self.assertEqual([True], List("", "2", "33").toStream().map(fn.eq(_, "")).flatten())
+        self.assertEqual([True], List("", "2", "33").map(fn.eq(_, "")).flatten())
+        self.assertEqual([True], List("", "2", "33").toStream().map(fn.eq("", _)).flatten())
 
 
 

@@ -50,6 +50,15 @@ def _getattr_(obj, item):
     return getattr(obj, item)
 
 
+def _eq_(first, second):
+    # print("function _eq_", first, second)
+    return first == second
+
+
+def _bool_(first):
+    return bool(first)
+
+
 class Underscore(object):
 
     def __init__(self, action, arg):
@@ -89,14 +98,14 @@ class Underscore(object):
         return Underscore(_le_, other)
 
     def __gt__(self, other):
-        return Underscore(_gt_, other)
+        return self.__class__(_gt_, other)
 
     def __ge__(self, other):
         return Underscore(_ge_, other)
 
     def __getattr__(self, item):
         # print('__getattr__', item)
-        return Underscore(_getattr_, item)
+        return AttributeUnderscore(item)
 
     def contains(self, item):
         __action__ = lambda first, second: second in first
@@ -115,6 +124,76 @@ class Underscore(object):
 
     def __iter__(self):
         return iter([1, 2, 3])
+
+
+class AttributeUnderscore(Underscore):
+
+    def __init__(self, attribute_name):
+        self.attribute_name = attribute_name
+        # print("AttributeUnderscore init", attribute_name)
+
+    def __call__(self, *args, **kwargs):
+        # print("AttributeUnderscore call", args, kwargs)
+        # print("AttributeUnderscore call", self.attribute_name, args, kwargs)
+        return MethodUnderscore(self.attribute_name, *args, **kwargs)
+
+
+class MethodUnderscore(Underscore):
+
+    def __init__(self, attribute_name, *args, **kwargs):
+        # print("MethodUnderscore init", attribute_name, args, kwargs)
+        # self.__action__ = action
+        self.attribute_name = attribute_name
+        self.args = args
+        self.kwargs = kwargs
+
+    def __gt__(self, other):
+        # print("MethodUnderscore gt", other)
+        return MethodCallUnderscore(_gt_, self.attribute_name, other, *self.args, **self.kwargs)
+
+    def __ge__(self, other):
+        return MethodCallUnderscore(_ge_, self.attribute_name, other, *self.args, **self.kwargs)
+
+    def __eq__(self, other):
+        # print("MethodUnderscore eq", other)
+        return MethodCallUnderscore(_eq_, self.attribute_name, other, *self.args, **self.kwargs)
+
+    # def __bool__(self):
+    #     return MethodCallUnderscore(_bool_, self.attribute_name, None, *self.args, **self.kwargs)
+
+    def __nonzero__(self):
+        # print("MethodUnderscore __nonzero__")
+        return bool(getattr(self.args[0], self.attribute_name))
+        # return MethodCallUnderscore(_bool_, self.attribute_name, None, *self.args, **self.kwargs)
+
+    def __call__(self, obj):
+        # print('MethodUnderscore call')
+        # print('MethodUnderscore call', obj, self.attribute_name)
+        # print('MethodUnderscore call value', getattr(obj, self.attribute_name)(*self.args, **self.kwargs))
+        # print('MethodUnderscore call value')
+        value = getattr(obj, self.attribute_name)(*self.args, **self.kwargs)
+        return value
+
+
+class MethodCallUnderscore(Underscore):
+
+    def __init__(self, action, attribute_name, __arg__, *args, **kwargs):
+        # print("MethodCallUnderscore init", attribute_name, args, kwargs)
+        self.__action__ = action
+        self.attribute_name = attribute_name
+        self.args = args
+        self.kwargs = kwargs
+        self.__arg__ = __arg__
+
+    def __gt__(self, other):
+        # print("MethodCallUnderscore gt", other)
+        return self.__class__(_gt_, self.attribute_name, *self.args, **self.kwargs)
+
+    def __call__(self, obj):
+        # print('MethodCallUnderscore call', obj, self.attribute_name)
+        # print('MethodCallUnderscore call value', getattr(obj, self.attribute_name)(*self.args, **self.kwargs))
+        value = getattr(obj, self.attribute_name)(*self.args, **self.kwargs)
+        return self.__action__(value, self.__arg__)
 
 
 call_without_parameters_lambda = lambda first, second: first
@@ -147,7 +226,8 @@ class ListGenerator(object):
         return self.toList() == other
 
     def __repr__(self):
-        return self.mkString(', ', "ListGenerator(i for i in [", "])")
+        return repr(self.toList())
+        # return self.mkString(', ', "ListGenerator(i for i in [", "])")
 
     def __len__(self):
         return self.toList().length()
@@ -162,11 +242,13 @@ class List(list):
         super(List, self).__init__(v)
 
     def map(self, func):
-        if hasattr(func, '__need_call__'):
-            func = func(_)
+        # if hasattr(func, '__need_call__'):
+        #     func = func(_)
         return ListGenerator(map(func, self))
 
     def filter(self, func):
+        # print("filter1", func)
+        # print("filter2", list(filter(func, self)))
         return ListGenerator(filter(func, self))
 
     def flatten(self):
@@ -189,6 +271,7 @@ class List(list):
 
     def __repr__(self):
         r = super(List, self).__repr__()
+        # return repr(self.toList())
         return "List(" + r.replace("[", "").replace("]", "") + ")"
 
     def mkString(self, param, start=None, end=None):
