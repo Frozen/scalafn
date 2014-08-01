@@ -40,3 +40,8 @@ isinstance = underscore_wrapper(__isinstance)
 
 __len = len
 len = underscore_wrapper(len)
+
+
+@underscore_wrapper
+def eq(first, second):
+    return first == second
