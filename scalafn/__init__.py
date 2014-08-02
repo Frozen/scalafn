@@ -155,22 +155,21 @@ class MethodUnderscore(Underscore):
         return MethodCallUnderscore(_ge_, self.attribute_name, other, *self.args, **self.kwargs)
 
     def __eq__(self, other):
-        # print("MethodUnderscore eq", other)
         return MethodCallUnderscore(_eq_, self.attribute_name, other, *self.args, **self.kwargs)
 
-    # def __bool__(self):
-    #     return MethodCallUnderscore(_bool_, self.attribute_name, None, *self.args, **self.kwargs)
+    def __mul__(self, other):
+        return MethodCallUnderscore(_mul_, self.attribute_name, other, *self.args, **self.kwargs)
+
+    def __div__(self, other):
+        return MethodCallUnderscore(_div_, self.attribute_name, other, *self.args, **self.kwargs)
+
+    def __rdiv__(self, other):
+        return MethodCallUnderscore(_rdiv_, self.attribute_name, other, *self.args, **self.kwargs)
 
     def __nonzero__(self):
-        # print("MethodUnderscore __nonzero__")
         return bool(getattr(self.args[0], self.attribute_name))
-        # return MethodCallUnderscore(_bool_, self.attribute_name, None, *self.args, **self.kwargs)
 
     def __call__(self, obj):
-        # print('MethodUnderscore call')
-        # print('MethodUnderscore call', obj, self.attribute_name)
-        # print('MethodUnderscore call value', getattr(obj, self.attribute_name)(*self.args, **self.kwargs))
-        # print('MethodUnderscore call value')
         value = getattr(obj, self.attribute_name)(*self.args, **self.kwargs)
         return value
 

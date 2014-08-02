@@ -2,9 +2,6 @@ from unittest import TestCase, skip
 
 from scalafn import List, _
 from scalafn import fn
-from scalafn.fn import underscore_wrapper
-
-
 
 
 class TestFunctional(TestCase):
@@ -219,10 +216,24 @@ class TestUnderscoreAttributesCall(TestCase):
     def test_call_undefined_methods_3(self):
         Inner = self.Inner
 
-        self.assertEqual(List(1), List(Inner(1)).map(_.get_a()>0))
-        self.assertEqual(List(1), List(Inner(2)).map(_.get_a()>=0))
-        self.assertEqual(List(1), List(Inner(3)).map(_.get_a()<=1))
-        self.assertEqual(List(1), List(Inner(3)).map(_.get_a()<2))
+        self.assertEqual(List(1), List(Inner(1)).map(_.get_a() > 0))
+        self.assertEqual(List(1), List(Inner(2)).map(_.get_a() >= 0))
+        self.assertEqual(List(1), List(Inner(3)).map(_.get_a() <= 1))
+        self.assertEqual(List(1), List(Inner(3)).map(_.get_a() < 2))
+
+    def test_call_undefined_mul(self):
+        Inner = self.Inner
+
+        self.assertEqual(List(2), List(Inner(1)).map(_.get_a() * 2))
+        self.assertEqual(List(2), List(Inner(1)).map(2 * _.get_a()))
+
+    def test_div(self):
+        Inner = self.Inner
+
+        self.assertEqual(List(1), List(Inner(2)).map(_.get_a() / 2))
+        self.assertEqual(List(1), List(Inner(2)).map(2 / _.get_a()))
+
+
 
 
 class TestFunctions(TestCase):
