@@ -187,6 +187,11 @@ class TestUnderscoreAttributesCall(TestCase):
 
         init = List(Inner(True), Inner(False))
 
+        # print(List(*init).filter(_.a).toList().length())
+        # print(List(Inner(False)).filter(_.a).toList())
+
+        # print(List(*init).filter(_.a).toList().length())
+
         self.assertEqual(List(Inner(True)), List(*init).filter(_.a).toList())
 
         with self.assertRaises(TypeError):
@@ -213,13 +218,16 @@ class TestUnderscoreAttributesCall(TestCase):
         with self.assertRaises(TypeError):
             self.assertEqual(List(2), List(Inner()).map(_.get_a(b=2)).toList())
 
-    def test_call_undefined_methods_3(self):
+    def test_call_undefined_methods_cmp(self):
         Inner = self.Inner
 
-        self.assertEqual(List(1), List(Inner(1)).map(_.get_a() > 0))
-        self.assertEqual(List(1), List(Inner(2)).map(_.get_a() >= 0))
-        self.assertEqual(List(1), List(Inner(3)).map(_.get_a() <= 1))
-        self.assertEqual(List(1), List(Inner(3)).map(_.get_a() < 2))
+        # print( List(Inner(1)).map(_.get_a() > 0).toList())
+        # print(List(True) == List(1))
+
+        self.assertEqual(List(True), List(Inner(1)).map(_.get_a() > 0))
+        self.assertEqual(List(True), List(Inner(2)).map(_.get_a() >= 0))
+        self.assertEqual(List(False), List(Inner(3)).map(_.get_a() <= 1))
+        self.assertEqual(List(False), List(Inner(3)).map(_.get_a() < 2))
 
     def test_call_undefined_mul(self):
         Inner = self.Inner

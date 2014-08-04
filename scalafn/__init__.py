@@ -92,6 +92,7 @@ class Underscore(object):
         return Underscore(_rsub_, other)
 
     def __lt__(self, other):
+        # print('Underscore __lt__', )
         return Underscore(_lt_, other)
 
     def __le__(self, other):
@@ -104,7 +105,7 @@ class Underscore(object):
         return Underscore(_ge_, other)
 
     def __getattr__(self, item):
-        # print('__getattr__', item)
+        # print('Underscore __getattr__', item)
         return AttributeUnderscore(item)
 
     def contains(self, item):
@@ -116,7 +117,7 @@ class Underscore(object):
         return Underscore(__action__, item)
 
     def __contains__(self, item):
-        print("contains", item)
+        # print("contains", item)
         raise NotImplementedError
 
     def __call__(self, value):
@@ -131,6 +132,16 @@ class AttributeUnderscore(Underscore):
     def __init__(self, attribute_name):
         self.attribute_name = attribute_name
         # print("AttributeUnderscore init", attribute_name)
+
+
+    def _need_call_(self):
+        attribute_name = self.attribute_name
+        def need_call(obj):
+            return getattr(obj, attribute_name)
+        #
+        return need_call
+
+
 
     def __call__(self, *args, **kwargs):
         # print("AttributeUnderscore call", args, kwargs)
@@ -154,6 +165,12 @@ class MethodUnderscore(Underscore):
     def __ge__(self, other):
         return MethodCallUnderscore(_ge_, self.attribute_name, other, *self.args, **self.kwargs)
 
+    def __lt__(self, other):
+        return MethodCallUnderscore(_lt_, self.attribute_name, other, *self.args, **self.kwargs)
+
+    def __le__(self, other):
+        return MethodCallUnderscore(_le_, self.attribute_name, other, *self.args, **self.kwargs)
+
     def __eq__(self, other):
         return MethodCallUnderscore(_eq_, self.attribute_name, other, *self.args, **self.kwargs)
 
@@ -163,14 +180,23 @@ class MethodUnderscore(Underscore):
     def __div__(self, other):
         return MethodCallUnderscore(_div_, self.attribute_name, other, *self.args, **self.kwargs)
 
+    def __truediv__(self, other):
+        return MethodCallUnderscore(_div_, self.attribute_name, other, *self.args, **self.kwargs)
+
+    def __rtruediv__(self, other):
+        return MethodCallUnderscore(_rdiv_, self.attribute_name, other, *self.args, **self.kwargs)
+
     def __rdiv__(self, other):
         return MethodCallUnderscore(_rdiv_, self.attribute_name, other, *self.args, **self.kwargs)
 
     def __nonzero__(self):
+        # print("nonzero")
         return bool(getattr(self.args[0], self.attribute_name))
 
     def __call__(self, obj):
+
         value = getattr(obj, self.attribute_name)(*self.args, **self.kwargs)
+        # print("MethodUnderscore __call", value)
         return value
 
 
@@ -184,9 +210,9 @@ class MethodCallUnderscore(Underscore):
         self.kwargs = kwargs
         self.__arg__ = __arg__
 
-    def __gt__(self, other):
+    # def __gt__(self, other):
         # print("MethodCallUnderscore gt", other)
-        return self.__class__(_gt_, self.attribute_name, *self.args, **self.kwargs)
+        # return self.__class__(_gt_, self.attribute_name, *self.args, **self.kwargs)
 
     def __call__(self, obj):
         # print('MethodCallUnderscore call', obj, self.attribute_name)
@@ -241,13 +267,47 @@ class List(list):
         super(List, self).__init__(v)
 
     def map(self, func):
+        '''
+        rs = []
+        print("func", func)
+        # print("func __need_call__", func, hasattr(func, '__need_call__'))
         # if hasattr(func, '__need_call__'):
         #     func = func(_)
+        print("self", self)
+
+        for i in self:
+            print ("i", i)
+            tmp = func(i)
+            print('tmp', tmp)
+            rs.append(func(i))
+
+        return ListGenerator(i for i in rs)
+        '''
         return ListGenerator(map(func, self))
 
     def filter(self, func):
-        # print("filter1", func)
-        # print("filter2", list(filter(func, self)))
+        '''
+        print("filter1", func)
+        print("filter2", list(filter(func, self)))
+        if hasattr(func, '__need_call__'):
+            func = func.__need_call__()
+            # func = func(_)
+
+        rs = []
+
+        for i in self:
+            print("func", func)
+            print("i", i)
+            tmp = func(i)
+            print("tmp", tmp)
+            if tmp:
+                rs.append(i)
+
+        return ListGenerator(i for i in rs)
+        '''
+        if isinstance(func, AttributeUnderscore):
+        # if hasattr(func, '_need_call_'):
+            func = func._need_call_()
         return ListGenerator(filter(func, self))
 
     def flatten(self):
