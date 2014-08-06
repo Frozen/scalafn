@@ -1,3 +1,4 @@
+from functools import wraps
 from future.builtins import *
 import types
 
@@ -66,43 +67,43 @@ class Underscore(object):
         self.__arg__ = arg
 
     def __mul__(self, other):
-        return Underscore(_mul_, other)
+        return self.__class__(_mul_, other)
 
     __rmul__ = _mul_
 
     def __div__(self, other):
-        return Underscore(_div_, other)
+        return self.__class__(_div_, other)
 
     __truediv__ = __div__
 
     def __rdiv__(self, other):
-        return Underscore(_rdiv_, other)
+        return self.__class__(_rdiv_, other)
 
     __rtruediv__ = __rdiv__
 
     def __add__(self, other):
-        return Underscore(_add_, other)
+        return self.__class__(_add_, other)
 
     __radd__ = __add__
 
     def __sub__(self, other):
-        return Underscore(_sub_, other)
+        return self.__class__(_sub_, other)
 
     def __rsub__(self, other):
-        return Underscore(_rsub_, other)
+        return self.__class__(_rsub_, other)
 
     def __lt__(self, other):
         # print('Underscore __lt__', )
-        return Underscore(_lt_, other)
+        return self.__class__(_lt_, other)
 
     def __le__(self, other):
-        return Underscore(_le_, other)
+        return self.__class__(_le_, other)
 
     def __gt__(self, other):
         return self.__class__(_gt_, other)
 
     def __ge__(self, other):
-        return Underscore(_ge_, other)
+        return self.__class__(_ge_, other)
 
     def __getattr__(self, item):
         # print('Underscore __getattr__', item)
@@ -127,12 +128,11 @@ class Underscore(object):
         return iter([1, 2, 3])
 
 
-class AttributeUnderscore(Underscore):
+class AttributeUnderscore():
 
     def __init__(self, attribute_name):
         self.attribute_name = attribute_name
         # print("AttributeUnderscore init", attribute_name)
-
 
     def _need_call_(self):
         attribute_name = self.attribute_name
@@ -141,12 +141,32 @@ class AttributeUnderscore(Underscore):
         #
         return need_call
 
+    def __lt__(self, other):
+        return AttributeCallUnderscore(_lt_, self.attribute_name, other)
 
+    def __le__(self, other):
+        return AttributeCallUnderscore(_le_, self.attribute_name, other)
+
+    def __gt__(self, other):
+        return AttributeCallUnderscore(_gt_, self.attribute_name, other)
+
+    def __ge__(self, other):
+        return AttributeCallUnderscore(_ge_, self.attribute_name, other)
 
     def __call__(self, *args, **kwargs):
         # print("AttributeUnderscore call", args, kwargs)
         # print("AttributeUnderscore call", self.attribute_name, args, kwargs)
         return MethodUnderscore(self.attribute_name, *args, **kwargs)
+
+class AttributeCallUnderscore():
+
+    def __init__(self, action, attribute_name, other):
+        self.action = action
+        self.attribute_name = attribute_name
+        self.other = other
+
+    def __call__(self, object):
+        return self.action(getattr(object, self.attribute_name), self.other)
 
 
 class MethodUnderscore(Underscore):
@@ -225,6 +245,20 @@ call_without_parameters_lambda = lambda first, second: first
 _ = Underscore(call_without_parameters_lambda, None)
 
 
+def _need_call(f):
+
+    if isinstance(f, AttributeUnderscore):
+        f = f._need_call_()
+
+
+
+    @wraps(f)
+    def d(*args, **kwargs):
+        return f(*args, **kwargs)
+
+    return d
+
+
 class ListGenerator(object):
 
     def __init__(self, gen):
@@ -247,7 +281,20 @@ class ListGenerator(object):
     def filter(self, func):
         return ListGenerator(filter(func, self._gen))
 
+    # @_need_call
+    def filterNot(self, func):
+
+        # print(func)
+
+        if isinstance(func, AttributeUnderscore):
+            # print("isinstance(func, AttributeUnderscore)")
+            func = func._need_call_()
+
+        n = lambda x: not func(x)
+        return self.filter(n)
+
     def __eq__(self, other):
+        # print("ListGenerator", "__eq__", other)
         return self.toList() == other
 
     def __repr__(self):
@@ -256,6 +303,9 @@ class ListGenerator(object):
 
     def __len__(self):
         return self.toList().length()
+
+    def __str__(self):
+        return repr(self)
 
     def length(self):
         return len(self)
@@ -310,6 +360,8 @@ class List(list):
             func = func._need_call_()
         return ListGenerator(filter(func, self))
 
+
+
     def flatten(self):
         return self.filter(_)
 
@@ -359,6 +411,17 @@ class List(list):
     def length(self):
         return len(self)
 
+    def filterNot(self, func):
+
+        print("List filterNot func", func)
+
+        if isinstance(func, AttributeUnderscore):
+            print("isinstance(func, AttributeUnderscore)")
+            func = func._need_call_()
+            print(func)
+
+        n = lambda x: not func(x)
+        return self.filter(n)
 
 class String():
 

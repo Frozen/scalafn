@@ -3,8 +3,23 @@ from unittest import TestCase, skip
 from scalafn import List, _
 from scalafn import fn
 
+class Inner():
+    def __init__(self, a=None):
+        self.a = a
 
-class TestFunctional(TestCase):
+    def get_a(self):
+        return self.a
+
+    def set_a(self, a):
+        self.a = a
+
+    def set_and_get(self, a):
+        return a
+
+    def __eq__(self, other):
+        return self.a == other.a
+
+class TestListFunctional(TestCase):
 
     def test_1(self):
         self.assertEqual([1, 2, 3], [1, 2, 3])
@@ -58,6 +73,24 @@ class TestFunctional(TestCase):
 
         self.assertEqual([1], List(1, 2, 3).filter(_ < 2))
         self.assertEqual([1], List(1, 2, 3).toStream().filter(_ < 2))
+
+    def test_filterNot(self):
+
+        # self.assertEqual([0, '', False], List(*[0, 1, 2, '', True, False]).filterNot(lambda x: x))
+        # self.assertEqual([0, '', False], List(*[0, 1, 2, '', True, False]).filterNot(_))
+
+        # self.assertEqual([0, '', False], List(*[0, 1, 2, '', True, False]).toStream().filterNot(lambda x: x))
+        # self.assertEqual([0, '', False], List(*[0, 1, 2, '', True, False]).toStream().filterNot(_))
+
+        # self.assertEqual([2, 3], List(1, 2, 3).filterNot(_ < 2))
+        # self.assertEqual([2, 3], List(1, 2, 3).toStream().filterNot(_ < 2))
+
+        self.assertEqual([Inner()], List(Inner(), Inner(2), Inner(3)).filterNot(_.a).toList())
+        self.assertEqual([Inner()], List(Inner(), Inner(2), Inner(3)).toStream().filterNot(_.a))
+
+        # self.assertEqual([Inner(2), Inner(3)], List(Inner(1), Inner(2), Inner(3)).filterNot(_.a < 2))
+        # self.assertEqual([Inner(2), Inner(3)], List(Inner(1), Inner(2), Inner(3)).toStream().filterNot(_.a < 2))
+
 
     def test_no_side_effect(self):
 
@@ -161,21 +194,7 @@ class TestUnderscoreAttributesCall(TestCase):
 
     def setUp(self):
 
-        class Inner():
-            def __init__(self, a=None):
-                self.a = a
 
-            def get_a(self):
-                return self.a
-
-            def set_a(self, a):
-                self.a = a
-
-            def set_and_get(self, a):
-                return a
-
-            def __eq__(self, other):
-                return self.a == other.a
 
         self.Inner = Inner
 
