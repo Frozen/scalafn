@@ -99,6 +99,13 @@ class TestListFunctional(TestCase):
         self.assertEqual([1, 2, 3], init)
 
 
+    def test_iterable(self):
+
+        iter(List(1,2,3))
+        iter(List(1,2,3).toStream())
+
+
+
 class TestUnderscore(TestCase):
 
     def test_mul(self):

@@ -311,6 +311,10 @@ class ListGenerator(object):
         return len(self)
 
 
+    def __iter__(self):
+        return iter(self._gen)
+
+
 class List(list):
 
     def __init__(self, *v):
@@ -422,6 +426,7 @@ class List(list):
 
         n = lambda x: not func(x)
         return self.filter(n)
+
 
 class String():
 
