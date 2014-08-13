@@ -21,6 +21,9 @@ class Inner():
 
 class TestListFunctional(TestCase):
 
+    def setUp(self):
+        self.I = Inner
+
     def test_1(self):
         self.assertEqual([1, 2, 3], [1, 2, 3])
         self.assertEqual(List(1, 2, 3), List(1, 2, 3))
@@ -43,10 +46,21 @@ class TestListFunctional(TestCase):
         self.assertEqual("List(1, 2, 3)", str(List(1, 2, 3)))
 
     def test_map(self):
+        C = self.I
+
         self.assertEqual(List(1, 2, 3).map(lambda x: x*2), [2, 4, 6])
         self.assertEqual(List().map(lambda x: x*2), [])
         self.assertEqual(List(1, 2, 3).map(lambda x: x*2).toList(), [2, 4, 6])
         self.assertEqual(List().map(lambda x: x*2).toList(), [])
+
+        self.assertEqual([1, 2, "3", C()],
+                         List(C(1), C(2), C('3'), C(C())).map(_.a))
+        self.assertEqual([1, 2, "3", C()],
+                         List(C(1), C(2), C('3'), C(C())).toStream().map(_.a))
+        self.assertEqual([False, True, True],
+                         List(C(1), C(2), C(3)).map(_.a > 1))
+        self.assertEqual([False, True, True],
+                         List(C(1), C(2), C(3)).toStream().map(_.a > 1))
 
     def test_flatten(self):
         self.assertEqual(List(1, None, 2).flatten(), [1, 2])
@@ -76,21 +90,20 @@ class TestListFunctional(TestCase):
 
     def test_filterNot(self):
 
-        # self.assertEqual([0, '', False], List(*[0, 1, 2, '', True, False]).filterNot(lambda x: x))
-        # self.assertEqual([0, '', False], List(*[0, 1, 2, '', True, False]).filterNot(_))
+        self.assertEqual([0, '', False], List(*[0, 1, 2, '', True, False]).filterNot(lambda x: x))
+        self.assertEqual([0, '', False], List(*[0, 1, 2, '', True, False]).filterNot(_))
 
-        # self.assertEqual([0, '', False], List(*[0, 1, 2, '', True, False]).toStream().filterNot(lambda x: x))
-        # self.assertEqual([0, '', False], List(*[0, 1, 2, '', True, False]).toStream().filterNot(_))
+        self.assertEqual([0, '', False], List(*[0, 1, 2, '', True, False]).toStream().filterNot(lambda x: x))
+        self.assertEqual([0, '', False], List(*[0, 1, 2, '', True, False]).toStream().filterNot(_))
 
-        # self.assertEqual([2, 3], List(1, 2, 3).filterNot(_ < 2))
-        # self.assertEqual([2, 3], List(1, 2, 3).toStream().filterNot(_ < 2))
+        self.assertEqual([2, 3], List(1, 2, 3).filterNot(_ < 2))
+        self.assertEqual([2, 3], List(1, 2, 3).toStream().filterNot(_ < 2))
 
         self.assertEqual([Inner()], List(Inner(), Inner(2), Inner(3)).filterNot(_.a).toList())
         self.assertEqual([Inner()], List(Inner(), Inner(2), Inner(3)).toStream().filterNot(_.a))
 
-        # self.assertEqual([Inner(2), Inner(3)], List(Inner(1), Inner(2), Inner(3)).filterNot(_.a < 2))
-        # self.assertEqual([Inner(2), Inner(3)], List(Inner(1), Inner(2), Inner(3)).toStream().filterNot(_.a < 2))
-
+        self.assertEqual([Inner(2), Inner(3)], List(Inner(1), Inner(2), Inner(3)).filterNot(_.a < 2))
+        self.assertEqual([Inner(2), Inner(3)], List(Inner(1), Inner(2), Inner(3)).toStream().filterNot(_.a < 2))
 
     def test_no_side_effect(self):
 
@@ -98,12 +111,10 @@ class TestListFunctional(TestCase):
         List(*init).map(_*2).filter(_ > 0).flatten().toList()
         self.assertEqual([1, 2, 3], init)
 
-
     def test_iterable(self):
 
         iter(List(1,2,3))
         iter(List(1,2,3).toStream())
-
 
 
 class TestUnderscore(TestCase):
@@ -175,11 +186,6 @@ class TestUnderscore(TestCase):
         self.assertEqual(False, (2>=_)(3))
         self.assertEqual(True, (2>=_)(1))
 
-    def test_in(self):
-
-        self.assertTrue((_.contains(2))([1, 2, 3]))
-        self.assertTrue((_.in_([1, 2, 3]))(2))
-
     def test_no_param(self):
 
         self.assertEqual([1, 2], List(1, '', 2, None, 0).filter(_))
@@ -195,6 +201,25 @@ class TestUnderscore(TestCase):
         self.assertEqual(2, len(List(1, 2)))
         self.assertEqual(2, len(List(1, 2).toStream()))
         self.assertEqual(2, List(1, 2).toStream().length())
+
+
+class TestUnderscoreAttributes(TestCase):
+
+    def setUp(self):
+        C = Inner
+        self.list = List(C(1), C(2), C(3))
+
+    def test_methods(self):
+
+        self.assertEqual([1, 2, 3], self.list.map(_.a * 1))
+        self.assertEqual([1, 2, 3], self.list.map(1 * _.a))
+
+        self.assertEqual([1, 2, 3], self.list.map(_.a / 1))
+        self.assertEqual([6, 3, 2], self.list.map(6 / _.a))
+
+
+
+
 
 
 class TestUnderscoreAttributesCall(TestCase):
@@ -223,22 +248,23 @@ class TestUnderscoreAttributesCall(TestCase):
         with self.assertRaises(TypeError):
             self.assertEqual(List(Inner(True)), List(*init).filter(_.a == True).toList())
 
+    @skip('in feature versions')
     def test_call_undefined_methods_1(self):
 
         Inner = self.Inner
 
         init = List(Inner(1), Inner(2))
 
-        self.assertEqual(1, _.get_a()(Inner(1)))
+        # self.assertEqual(1, _.get_a().get_callable(Inner(1)))
         self.assertEqual(List(Inner(2)), List(*init).filter(_.get_a() > 1).toList())
-        self.assertEqual(List(Inner(2)), List(*init).filter(fn.eq(_.get_a(), 2)).toList())
+        # self.assertEqual(List(Inner(2)), List(*init).filter(fn.eq(_.get_a(), 2)).toList())
         self.assertEqual(List(Inner(1), Inner(True)), List(Inner(1), Inner(True)).filter(fn.isinstance(_.get_a(), int)).toList())
 
     def test_call_undefined_methods_2(self):
 
         Inner = self.Inner
 
-        self.assertEqual(List(1), List(Inner()).map(_.set_and_get(a=1)).toList())
+        self.assertEqual([10], List(Inner()).map(_.set_and_get(a=10)).toList())
         self.assertEqual(List(1), List(Inner()).map(_.set_and_get(1)).toList())
         self.assertEqual(List(2), List(Inner()).map(_.set_and_get(2)).toList())
         with self.assertRaises(TypeError):

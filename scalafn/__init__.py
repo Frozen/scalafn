@@ -109,13 +109,13 @@ class Underscore(object):
         # print('Underscore __getattr__', item)
         return AttributeUnderscore(item)
 
-    def contains(self, item):
-        __action__ = lambda first, second: second in first
-        return Underscore(__action__, item)
+    # def contains(self, item):
+    #     __action__ = lambda first, second: second in first
+    #     return Underscore(__action__, item)
 
-    def in_(self, item):
-        __action__ = lambda first, second: first in second
-        return Underscore(__action__, item)
+    # def in_(self, item):
+    #     __action__ = lambda first, second: first in second
+    #     return Underscore(__action__, item)
 
     def __contains__(self, item):
         # print("contains", item)
@@ -132,14 +132,6 @@ class AttributeUnderscore():
 
     def __init__(self, attribute_name):
         self.attribute_name = attribute_name
-        # print("AttributeUnderscore init", attribute_name)
-
-    def _need_call_(self):
-        attribute_name = self.attribute_name
-        def need_call(obj):
-            return getattr(obj, attribute_name)
-        #
-        return need_call
 
     def __lt__(self, other):
         return AttributeCallUnderscore(_lt_, self.attribute_name, other)
@@ -153,10 +145,31 @@ class AttributeUnderscore():
     def __ge__(self, other):
         return AttributeCallUnderscore(_ge_, self.attribute_name, other)
 
+    def __mul__(self, other):
+        return AttributeCallUnderscore(_mul_, self.attribute_name, other)
+
+    def __rmul__(self, other):
+        return AttributeCallUnderscore(_mul_, self.attribute_name, other)
+
+    def __div__(self, other):
+        return AttributeCallUnderscore(_div_, self.attribute_name, other)
+
+    __truediv__ = __div__
+
+    def __rdiv__(self, other):
+        return AttributeCallUnderscore(_rdiv_, self.attribute_name, other)
+
+    __rtruediv__ = __rdiv__
+
     def __call__(self, *args, **kwargs):
-        # print("AttributeUnderscore call", args, kwargs)
-        # print("AttributeUnderscore call", self.attribute_name, args, kwargs)
         return MethodUnderscore(self.attribute_name, *args, **kwargs)
+
+    def get_callable(self):
+        attribute_name = self.attribute_name
+
+        def AttributeUnderscore_get_callable(obj):
+            return getattr(obj, attribute_name)
+        return AttributeUnderscore_get_callable
 
 class AttributeCallUnderscore():
 
@@ -166,20 +179,18 @@ class AttributeCallUnderscore():
         self.other = other
 
     def __call__(self, object):
-        return self.action(getattr(object, self.attribute_name), self.other)
+        ret = self.action(getattr(object, self.attribute_name), self.other)
+        return ret
 
 
-class MethodUnderscore(Underscore):
+class MethodUnderscore():
 
     def __init__(self, attribute_name, *args, **kwargs):
-        # print("MethodUnderscore init", attribute_name, args, kwargs)
-        # self.__action__ = action
         self.attribute_name = attribute_name
         self.args = args
         self.kwargs = kwargs
 
     def __gt__(self, other):
-        # print("MethodUnderscore gt", other)
         return MethodCallUnderscore(_gt_, self.attribute_name, other, *self.args, **self.kwargs)
 
     def __ge__(self, other):
@@ -197,6 +208,9 @@ class MethodUnderscore(Underscore):
     def __mul__(self, other):
         return MethodCallUnderscore(_mul_, self.attribute_name, other, *self.args, **self.kwargs)
 
+    def __rmul__(self, other):
+        return MethodCallUnderscore(_mul_, self.attribute_name, other, *self.args, **self.kwargs)
+
     def __div__(self, other):
         return MethodCallUnderscore(_div_, self.attribute_name, other, *self.args, **self.kwargs)
 
@@ -210,33 +224,28 @@ class MethodUnderscore(Underscore):
         return MethodCallUnderscore(_rdiv_, self.attribute_name, other, *self.args, **self.kwargs)
 
     def __nonzero__(self):
-        # print("nonzero")
         return bool(getattr(self.args[0], self.attribute_name))
 
-    def __call__(self, obj):
+    def get_callable(self):
+        def MethodUnderscore_get_call(obj):
+            attr = getattr(obj, self.attribute_name)
+            ret = attr(*self.args, **self.kwargs)
+            return ret
+        return MethodUnderscore_get_call
 
-        value = getattr(obj, self.attribute_name)(*self.args, **self.kwargs)
-        # print("MethodUnderscore __call", value)
-        return value
 
 
-class MethodCallUnderscore(Underscore):
+
+class MethodCallUnderscore():
 
     def __init__(self, action, attribute_name, __arg__, *args, **kwargs):
-        # print("MethodCallUnderscore init", attribute_name, args, kwargs)
         self.__action__ = action
         self.attribute_name = attribute_name
         self.args = args
         self.kwargs = kwargs
         self.__arg__ = __arg__
 
-    # def __gt__(self, other):
-        # print("MethodCallUnderscore gt", other)
-        # return self.__class__(_gt_, self.attribute_name, *self.args, **self.kwargs)
-
     def __call__(self, obj):
-        # print('MethodCallUnderscore call', obj, self.attribute_name)
-        # print('MethodCallUnderscore call value', getattr(obj, self.attribute_name)(*self.args, **self.kwargs))
         value = getattr(obj, self.attribute_name)(*self.args, **self.kwargs)
         return self.__action__(value, self.__arg__)
 
@@ -245,18 +254,16 @@ call_without_parameters_lambda = lambda first, second: first
 _ = Underscore(call_without_parameters_lambda, None)
 
 
-def _need_call(f):
-
-    if isinstance(f, AttributeUnderscore):
-        f = f._need_call_()
-
-
+def need_call(f):
 
     @wraps(f)
-    def d(*args, **kwargs):
-        return f(*args, **kwargs)
+    def d(self, func):
+        if isinstance(func, (AttributeUnderscore, MethodUnderscore)):
+            func = func.get_callable()
+        return f(self, func)
 
     return d
+
 
 
 class ListGenerator(object):
@@ -264,6 +271,7 @@ class ListGenerator(object):
     def __init__(self, gen):
         self._gen = gen
 
+    @need_call
     def map(self, func):
         if hasattr(func, '__need_call__'):
             func = func(_)
@@ -281,25 +289,17 @@ class ListGenerator(object):
     def filter(self, func):
         return ListGenerator(filter(func, self._gen))
 
-    # @_need_call
+    @need_call
     def filterNot(self, func):
-
-        # print(func)
-
-        if isinstance(func, AttributeUnderscore):
-            # print("isinstance(func, AttributeUnderscore)")
-            func = func._need_call_()
 
         n = lambda x: not func(x)
         return self.filter(n)
 
     def __eq__(self, other):
-        # print("ListGenerator", "__eq__", other)
         return self.toList() == other
 
     def __repr__(self):
         return repr(self.toList())
-        # return self.mkString(', ', "ListGenerator(i for i in [", "])")
 
     def __len__(self):
         return self.toList().length()
@@ -310,7 +310,6 @@ class ListGenerator(object):
     def length(self):
         return len(self)
 
-
     def __iter__(self):
         return iter(self._gen)
 
@@ -320,7 +319,12 @@ class List(list):
     def __init__(self, *v):
         super(List, self).__init__(v)
 
+    @need_call
     def map(self, func):
+
+        # if isinstance(func, (AttributeUnderscore, MethodCallUnderscore)):
+        #     func = func.get_callable()
+
         '''
         rs = []
         print("func", func)
@@ -339,6 +343,7 @@ class List(list):
         '''
         return ListGenerator(map(func, self))
 
+    @need_call
     def filter(self, func):
         '''
         print("filter1", func)
@@ -359,9 +364,9 @@ class List(list):
 
         return ListGenerator(i for i in rs)
         '''
-        if isinstance(func, AttributeUnderscore):
+        # if isinstance(func, AttributeUnderscore):
         # if hasattr(func, '_need_call_'):
-            func = func._need_call_()
+        #     func = func._need_call_()
         return ListGenerator(filter(func, self))
 
 
@@ -415,15 +420,8 @@ class List(list):
     def length(self):
         return len(self)
 
+    @need_call
     def filterNot(self, func):
-
-        print("List filterNot func", func)
-
-        if isinstance(func, AttributeUnderscore):
-            print("isinstance(func, AttributeUnderscore)")
-            func = func._need_call_()
-            print(func)
-
         n = lambda x: not func(x)
         return self.filter(n)
 

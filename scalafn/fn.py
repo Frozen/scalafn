@@ -18,8 +18,8 @@ def _fn(f):
                 _args = list(args)
                 for index, arg in enumerate(_args):
                     if __isinstance(arg, Underscore):
-                        if __isinstance(arg, MethodUnderscore):
-                            underscore_param = arg(underscore_param)
+                        # if __isinstance(arg, MethodUnderscore):
+                        #     underscore_param = arg(underscore_param)
                         _args[index] = underscore_param
                         # print("underscore_wrapper ", f, _args)
                         rs = f(*_args, **kwargs)
@@ -28,8 +28,8 @@ def _fn(f):
                 _kwargs = kwargs.copy()
                 for index in _kwargs:
                     if __isinstance(_kwargs[index], Underscore):
-                        if __isinstance(_kwargs[index], MethodUnderscore):
-                            underscore_param = _kwargs[index](underscore_param)
+                        # if __isinstance(_kwargs[index], MethodUnderscore):
+                        #     underscore_param = _kwargs[index](underscore_param)
                         _kwargs[index] = underscore_param
                         return f(*_args, **_kwargs)
                 # print("underscore_wrapper ", f, _args, _kwargs)
