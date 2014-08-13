@@ -1,5 +1,5 @@
 from functools import wraps
-from future.builtins import *
+from future.builtins import *  # required!!
 import types
 
 
@@ -52,7 +52,6 @@ def _getattr_(obj, item):
 
 
 def _eq_(first, second):
-    # print("function _eq_", first, second)
     return first == second
 
 
@@ -106,16 +105,7 @@ class Underscore(object):
         return self.__class__(_ge_, other)
 
     def __getattr__(self, item):
-        # print('Underscore __getattr__', item)
         return AttributeUnderscore(item)
-
-    # def contains(self, item):
-    #     __action__ = lambda first, second: second in first
-    #     return Underscore(__action__, item)
-
-    # def in_(self, item):
-    #     __action__ = lambda first, second: first in second
-    #     return Underscore(__action__, item)
 
     def __contains__(self, item):
         # print("contains", item)
@@ -273,8 +263,6 @@ class ListGenerator(object):
 
     @need_call
     def map(self, func):
-        if hasattr(func, '__need_call__'):
-            func = func(_)
         return ListGenerator(map(func, self._gen))
 
     def toList(self):
@@ -321,53 +309,11 @@ class List(list):
 
     @need_call
     def map(self, func):
-
-        # if isinstance(func, (AttributeUnderscore, MethodCallUnderscore)):
-        #     func = func.get_callable()
-
-        '''
-        rs = []
-        print("func", func)
-        # print("func __need_call__", func, hasattr(func, '__need_call__'))
-        # if hasattr(func, '__need_call__'):
-        #     func = func(_)
-        print("self", self)
-
-        for i in self:
-            print ("i", i)
-            tmp = func(i)
-            print('tmp', tmp)
-            rs.append(func(i))
-
-        return ListGenerator(i for i in rs)
-        '''
-        return ListGenerator(map(func, self))
+        return self.toStream().map(func)
 
     @need_call
     def filter(self, func):
-        '''
-        print("filter1", func)
-        print("filter2", list(filter(func, self)))
-        if hasattr(func, '__need_call__'):
-            func = func.__need_call__()
-            # func = func(_)
-
-        rs = []
-
-        for i in self:
-            print("func", func)
-            print("i", i)
-            tmp = func(i)
-            print("tmp", tmp)
-            if tmp:
-                rs.append(i)
-
-        return ListGenerator(i for i in rs)
-        '''
-        # if isinstance(func, AttributeUnderscore):
-        # if hasattr(func, '_need_call_'):
-        #     func = func._need_call_()
-        return ListGenerator(filter(func, self))
+        return self.toStream().filter(func)
 
 
 

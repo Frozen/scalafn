@@ -5,7 +5,6 @@ from scalafn import Underscore, MethodUnderscore
 __isinstance = isinstance
 
 
-
 def _fn(f):
     @wraps(f)
     def wrapper(*args, **kwargs):
