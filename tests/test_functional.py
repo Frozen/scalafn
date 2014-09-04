@@ -3,6 +3,7 @@ from unittest import TestCase, skip
 from scalafn import List, _
 from scalafn import fn
 
+
 class Inner():
     def __init__(self, a=None):
         self.a = a
@@ -18,6 +19,7 @@ class Inner():
 
     def __eq__(self, other):
         return self.a == other.a
+
 
 class TestListFunctional(TestCase):
 
@@ -113,8 +115,20 @@ class TestListFunctional(TestCase):
 
     def test_iterable(self):
 
-        iter(List(1,2,3))
-        iter(List(1,2,3).toStream())
+        iter(List(1, 2, 3))
+        iter(List(1, 2, 3).toStream())
+
+    def test_groupby(self):
+        birds = List("Golden Eagle", "Gyrfalcon", "American Robin", "Mountain BlueBird", "Mountain-Hawk Eagle")
+        groupedByFirstLetter = birds.groupBy(lambda x: x[0])
+
+        ret = {"M": List('Mountain BlueBird', 'Mountain-Hawk Eagle'),
+               'G': List('Golden Eagle', 'Gyrfalcon'),
+               'A': List('American Robin')}
+
+        self.assertEqual(ret, groupedByFirstLetter)
+
+        self.assertEqual({}, List().groupBy(lambda x: x))
 
 
 class TestUnderscore(TestCase):

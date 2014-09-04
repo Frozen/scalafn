@@ -1,3 +1,4 @@
+from collections import defaultdict
 from functools import wraps
 from future.builtins import *  # required!!
 import types
@@ -301,6 +302,16 @@ class ListGenerator(object):
     def __iter__(self):
         return iter(self._gen)
 
+    def groupBy(self, func):
+
+        d = defaultdict(List)
+
+        for i in self:
+            tmp = func(i)
+            d[tmp] = d[tmp] + i
+
+        return d
+
 
 class List(list):
 
@@ -370,6 +381,10 @@ class List(list):
     def filterNot(self, func):
         n = lambda x: not func(x)
         return self.filter(n)
+
+
+    def groupBy(self, func):
+        return self.toStream().groupBy(func)
 
 
 class String():
