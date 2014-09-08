@@ -1,6 +1,6 @@
 from unittest import TestCase
 from scalafn import Map
-
+from future.builtins import *  # required!!
 
 class TestListFunctional(TestCase):
 
@@ -14,7 +14,6 @@ class TestListFunctional(TestCase):
         }, m.map(lambda x, y: (x*2, y*2)))
 
         self.assertEqual({}, Map().map(lambda x, y: (x, y)))
-
 
         m = Map({'A': [3, 1, 2], 'B': [5, 0, 4, 1]})
 

@@ -1,7 +1,10 @@
-
+from future.builtins import *  # required!!
 
 
 class Map(dict):
+
+    if not hasattr(dict, 'iteritems'):
+        iteritems = dict.items
 
     def map(self, func):
 
