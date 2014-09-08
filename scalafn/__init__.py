@@ -308,7 +308,7 @@ class ListGenerator(object):
 
         for i in self:
             tmp = func(i)
-            d[tmp] = d[tmp] + i
+            d[tmp] = d[tmp] + List(i)
 
         return d
 

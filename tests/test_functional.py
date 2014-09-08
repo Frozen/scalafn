@@ -131,6 +131,12 @@ class TestListFunctional(TestCase):
         self.assertEqual({}, List().groupBy(lambda x: x))
 
 
+        lst = [("A", "B"), ("A", "C")]
+        self.assertEqual({
+            'A': List(*lst)
+        }, List(*lst).groupBy(lambda x: x[0]))
+
+
 class TestUnderscore(TestCase):
 
     def test_mul(self):
