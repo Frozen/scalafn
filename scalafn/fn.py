@@ -1,5 +1,5 @@
 from functools import partial, wraps
-from scalafn import Underscore, MethodUnderscore
+from scalafn.list import Underscore, MethodUnderscore
 
 
 __isinstance = isinstance
