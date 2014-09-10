@@ -1,6 +1,6 @@
 from unittest import TestCase
 from scalafn import Map
-from future.builtins import *  # required!!
+
 
 class TestListFunctional(TestCase):
 

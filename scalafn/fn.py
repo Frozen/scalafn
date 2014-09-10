@@ -1,5 +1,6 @@
 from functools import partial, wraps
-from scalafn.list import Underscore, MethodUnderscore
+'''
+from scalafn. import Underscore, MethodUnderscore
 
 
 __isinstance = isinstance
@@ -52,3 +53,4 @@ len = underscore_wrapper(len)
 @underscore_wrapper
 def eq(first, second):
     return first == second
+'''
