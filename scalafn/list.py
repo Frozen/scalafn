@@ -70,8 +70,8 @@ class ListGenerator(object):
 
         return Map(d)
 
-    def sorted(self, cmp=None, key=None, reverse=False):
-        return self.toList().sorted(cmp, key, reverse)
+    def sorted(self, key=None, reverse=False):
+        return self.toList().sorted(key, reverse)
 
 
 class MultipleAdd():
@@ -156,8 +156,9 @@ class List(list):
     def groupBy(self, func):
         return self.toStream().groupBy(func)
 
-    def sorted(self, cmp=None, key=None, reverse=False):
-        return List(*sorted(self, cmp=cmp, key=key, reverse=reverse))
+    def sorted(self, key=None, reverse=False):
+        return List(*sorted(self, key=key, reverse=reverse))
+
 
 class String():
 
