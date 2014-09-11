@@ -120,3 +120,10 @@ class TestList(TestCase):
         self.assertEqual({
             'A': List(*lst)
         }, List(*lst).groupBy(lambda x: x[0]))
+
+    def test_sorted(self):
+
+        self.assertEqual(List(3, 1, 2).sorted(), [1, 2, 3])
+        self.assertEqual(List(3, 1, 2).toStream().sorted(), [1, 2, 3])
+        self.assertEqual(List(3, 1, 2).sorted(key=lambda x: x), [1, 2, 3])
+        self.assertEqual(List(3, 1, 2).sorted(key=lambda x: x, reverse=True), [3, 2, 1])
