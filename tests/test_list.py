@@ -41,8 +41,11 @@ class TestList(TestCase):
         #                  List(C(1), C(2), C(3)).toStream().map(_.a > 1))
 
     def test_flatten(self):
-        self.assertEqual(List(1, None, 2).flatten(), [1, 2])
-        self.assertEqual(List(1, None, 2).toStream().flatten(), [1, 2])
+
+        self.assertEqual(List(1, 2, 3, 4), [1, 2, 3, 4])
+        self.assertEqual(List(List(1, 2), List(3, 4)).flatten().toList(), [1, 2, 3, 4])
+        self.assertEqual(List(1, None, 2).flatten().toList(), [1, None, 2])
+        self.assertEqual(List(1, None, 2).toStream().flatten(), [1, None, 2])
 
     def test_mkString(self):
 

@@ -1,6 +1,7 @@
 from collections import defaultdict
 from future.builtins import *  # required!!
 import types
+from past.types import basestring
 from scalafn import Map
 
 class ListGenerator(object):
@@ -21,7 +22,16 @@ class ListGenerator(object):
         return self.toList().mkString(param, start, end)
 
     def flatten(self):
-        return self.filter(lambda x: x)
+
+        rs = []
+        for x in self:
+            try:
+                iter(x)
+                rs = rs + list(x)
+            except TypeError:
+                rs = rs + [x]
+
+        return List(*rs)
 
     def filter(self, func):
         return ListGenerator(filter(func, self._gen))
@@ -85,7 +95,7 @@ class List(list):
         return self.toStream().filter(func)
 
     def flatten(self):
-        return self.filter(lambda x: x)
+        return self.toStream().flatten()
 
     def __str__(self):
         return super(List, self).__str__()
