@@ -11,7 +11,8 @@ setup(
     url='https://github.com/Frozen/scalafn',
     description='Scala like list',
     install_requires=[
-        "future"
+        "future",
+        "fn"
     ],
     classifiers=[
         'Development Status :: Beta',
