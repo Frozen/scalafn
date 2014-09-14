@@ -1,4 +1,5 @@
 from unittest import TestCase
+from fn.monad import Option
 from scalafn import List
 
 
@@ -130,3 +131,11 @@ class TestList(TestCase):
         self.assertEqual(List(3, 1, 2).toStream().sorted(), [1, 2, 3])
         self.assertEqual(List(3, 1, 2).sorted(key=lambda x: x), [1, 2, 3])
         self.assertEqual(List(3, 1, 2).sorted(key=lambda x: x, reverse=True), [3, 2, 1])
+
+    def test_call_optionable(self):
+
+        self.assertIsInstance(List(1,2)(0), Option)
+        self.assertIsInstance(List(1,2)(10), Option)
+
+        self.assertEqual(List(1, 2)(0).get_or(0), 1)
+        self.assertEqual(List(1, 2).toStream()(3).get_or(10), 10)

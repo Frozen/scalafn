@@ -1,7 +1,7 @@
 from unittest import TestCase, skip
 
 from scalafn import List, _
-from scalafn import fn
+# from scalafn import fn
 
 
 class Inner():

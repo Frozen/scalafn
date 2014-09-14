@@ -1,8 +1,8 @@
 from collections import defaultdict
 from future.builtins import *  # required!!
-import types
-from past.types import basestring
 from scalafn import Map
+from fn.monad import optionable
+
 
 class ListGenerator(object):
 
@@ -72,6 +72,9 @@ class ListGenerator(object):
 
     def sorted(self, key=None, reverse=False):
         return self.toList().sorted(key, reverse)
+
+    def __call__(self, index):
+        return self.toList()(index)
 
 
 class MultipleAdd():
@@ -158,6 +161,13 @@ class List(list):
 
     def sorted(self, key=None, reverse=False):
         return List(*sorted(self, key=key, reverse=reverse))
+
+    @optionable
+    def __call__(self, index):
+        try:
+            return self[index]
+        except IndexError:
+            return None
 
 
 class String():
