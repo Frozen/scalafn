@@ -1,6 +1,6 @@
 
 from .map import Map
-from .list import List
+from .list import List, ListGenerator
 from .underscore import _
 
 
