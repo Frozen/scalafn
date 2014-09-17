@@ -139,3 +139,12 @@ class TestList(TestCase):
 
         self.assertEqual(List(1, 2)(0).get_or(0), 1)
         self.assertEqual(List(1, 2).toStream()(3).get_or(10), 10)
+
+    def test_to_set(self):
+
+        s1 = set(List('1', '2', '3'))
+        self.assertEqual(s1, {'1', '2', '3'})
+
+        s2 = set(List('1', '2', '3').toStream())
+        self.assertEqual(s2, {'1', '2', '3'})
+

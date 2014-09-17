@@ -76,6 +76,9 @@ class ListGenerator(object):
     def __call__(self, index):
         return self.toList()(index)
 
+    def to_set(self):
+        return self.toList().to_set()
+
 
 class MultipleAdd():
 
@@ -169,6 +172,8 @@ class List(list):
         except IndexError:
             return None
 
+    def to_set(self):
+        return set(self)
 
 class String():
 
