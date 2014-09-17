@@ -84,6 +84,12 @@ class ListGenerator(object):
 
     to_map = toMap
 
+    def true(self):
+        return self.filter(lambda x: x)
+
+    def false(self):
+        return self.filterNot(lambda x: x)
+
 
 class MultipleAdd():
 
@@ -184,6 +190,12 @@ class List(list):
         return Map(self.map(func))
 
     to_map = toMap
+
+    def true(self):
+        return self.filter(lambda x: x)
+
+    def false(self):
+        return self.filterNot(lambda x: x)
 
 class String():
 

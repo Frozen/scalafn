@@ -157,3 +157,17 @@ class TestList(TestCase):
 
         self.assertEqual(Map([(1, 2), (2, 3), (3, 4), (4, 5)]), s1.to_map(lambda x: (x, x+1)))
         self.assertEqual(Map([(1, 2), (2, 3), (3, 4), (4, 5)]), s1.toStream().to_map(lambda x: (x, x+1)))
+
+    def test_true(self):
+
+        s1 = List(1, "2", None, False, "")
+
+        self.assertEqual(List(1, "2"), s1.true())
+        self.assertEqual(List(1, "2"), s1.toStream().true())
+
+    def test_false(self):
+
+        s1 = List(1, "2", None, False, "")
+
+        self.assertEqual(List(None, False, ""), s1.false())
+        self.assertEqual(List(None, False, ""), s1.toStream().false())
