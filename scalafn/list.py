@@ -79,6 +79,11 @@ class ListGenerator(object):
     def to_set(self):
         return self.toList().to_set()
 
+    def toMap(self, func):
+        return self.toList().toMap(func)
+
+    to_map = toMap
+
 
 class MultipleAdd():
 
@@ -174,6 +179,11 @@ class List(list):
 
     def to_set(self):
         return set(self)
+
+    def toMap(self, func):
+        return Map(self.map(func))
+
+    to_map = toMap
 
 class String():
 

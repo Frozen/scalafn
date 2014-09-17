@@ -1,6 +1,6 @@
 from unittest import TestCase
 from fn.monad import Option
-from scalafn import List
+from scalafn import List, Map
 
 
 class TestList(TestCase):
@@ -148,3 +148,12 @@ class TestList(TestCase):
         s2 = set(List('1', '2', '3').toStream())
         self.assertEqual(s2, {'1', '2', '3'})
 
+    def test_to_map(self):
+
+        s1 = List(1, 2, 3, 4)
+
+        self.assertEqual(Map([(1, 2), (2, 3), (3, 4), (4, 5)]), s1.toMap(lambda x: (x, x+1)))
+        self.assertEqual(Map([(1, 2), (2, 3), (3, 4), (4, 5)]), s1.toStream().toMap(lambda x: (x, x+1)))
+
+        self.assertEqual(Map([(1, 2), (2, 3), (3, 4), (4, 5)]), s1.to_map(lambda x: (x, x+1)))
+        self.assertEqual(Map([(1, 2), (2, 3), (3, 4), (4, 5)]), s1.toStream().to_map(lambda x: (x, x+1)))
