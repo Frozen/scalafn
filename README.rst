@@ -19,7 +19,7 @@ Hello World:
 
 
 .. code-block:: python
-    # You can't use this code in ipython, because symbol _ means "last command". Use import _ as X
+
     from scalafn import List
 
     str1 = """blablabla@yandex.ru R=dnslookup T=remote_smtp H=mx.yandex.ru [127.0.0.1] X=TLS1.0:RSA_AES_256_CBC_SHA1:32"""
