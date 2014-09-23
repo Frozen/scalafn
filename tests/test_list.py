@@ -171,3 +171,26 @@ class TestList(TestCase):
 
         self.assertEqual(List(None, False, ""), s1.false())
         self.assertEqual(List(None, False, ""), s1.toStream().false())
+
+    def test_example1(self):
+        str1 = """blablabla@yandex.ru R=dnslookup T=remote_smtp H=mx.yandex.ru [127.0.0.1] X=TLS1.0:RSA_AES_256_CBC_SHA1:32"""
+        str2 = """<> R=1XSUTD-0008L9-Vn U=Debian-exim P=local S=5035 T="Mail delivery failed: returning message to sender" for noreply@example.com"""
+        import re
+
+        rs1 = List(*re.split(" (?=\w=)", str1)).filter(lambda x: x.count("=")).toMap(lambda x: x.split("=", 1))
+        self.assertEqual(dict(
+            R='dnslookup',
+            T='remote_smtp',
+            H='mx.yandex.ru [127.0.0.1]',
+            X='TLS1.0:RSA_AES_256_CBC_SHA1:32'
+        ), rs1)
+
+        rs2 = List(*re.split(" (?=\w=)", str2)).filter(lambda x: x.count("=")).toMap(lambda x: x.split("=", 1))
+        self.assertEqual(dict(
+            R='1XSUTD-0008L9-Vn',
+            U='Debian-exim',
+            P='local',
+            S='5035',
+            T='"Mail delivery failed: returning message to sender" for noreply@example.com'
+        ), rs2)
+        # list(filter(lambda x: x.count("="), re.split(" (?=\w=)", message)))
