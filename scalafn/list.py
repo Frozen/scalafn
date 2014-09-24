@@ -82,6 +82,21 @@ class ListGenerator(object):
     def toMap(self, func):
         return self.toList().toMap(func)
 
+    def partition(self, func):
+
+        true = []
+        false = []
+
+        for item in self:
+            if func(item):
+                true.append(item)
+            else:
+                false.append(item)
+
+        return List(*true), List(*false)
+
+
+
     to_map = toMap
 
     def true(self):
@@ -205,6 +220,9 @@ class List(list):
 
     def false(self):
         return self.filterNot(lambda x: x)
+
+    def partition(self, func):
+        return self.toStream().partition(func)
 
     def take(self, n):
         return self[:n]

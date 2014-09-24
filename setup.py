@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='scalafn',
-    version='0.0.10.10',
+    version='0.0.12',
     author='Konstantin Potapov',
     author_email='phpconf@gmail.com',
     packages=find_packages(),

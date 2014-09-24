@@ -148,6 +148,13 @@ class TestList(TestCase):
         s2 = set(List('1', '2', '3').toStream())
         self.assertEqual(s2, {'1', '2', '3'})
 
+
+    def test_partition(self):
+
+        s1 = List("1", "a", "2", "b", "3")
+        self.assertEqual((List("1", "2", "3"), List("a", "b")), s1.partition(lambda x: x.isdigit()))
+        self.assertEqual((List("1", "2", "3"), List("a", "b")), s1.toStream().partition(lambda x: x.isdigit()))
+
     def test_to_map(self):
 
         s1 = List(1, 2, 3, 4)
@@ -210,3 +217,4 @@ class TestList(TestCase):
 
         self.assertEqual("12345", List(1, 2, 3, 4, 5).fold('', lambda prev, current: str(current)))
 
+        
