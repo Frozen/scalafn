@@ -79,6 +79,20 @@ class ListGenerator(object):
     def to_set(self):
         return self.toList().to_set()
 
+    def partition(self, func):
+
+        true = []
+        false = []
+
+        for item in self:
+            if func(item):
+                true.append(item)
+            else:
+                false.append(item)
+
+        return List(*true), List(*false)
+
+
 
 class MultipleAdd():
 
@@ -174,6 +188,9 @@ class List(list):
 
     def to_set(self):
         return set(self)
+
+    def partition(self, func):
+        return self.toStream().partition(func)
 
 class String():
 
