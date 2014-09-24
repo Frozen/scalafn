@@ -1,6 +1,6 @@
 from unittest import TestCase
 from fn.monad import Option
-from scalafn import List
+from scalafn import List, Map
 
 
 class TestList(TestCase):
@@ -154,3 +154,50 @@ class TestList(TestCase):
         s1 = List("1", "a", "2", "b", "3")
         self.assertEqual((List("1", "2", "3"), List("a", "b")), s1.partition(lambda x: x.isdigit()))
         self.assertEqual((List("1", "2", "3"), List("a", "b")), s1.toStream().partition(lambda x: x.isdigit()))
+
+    def test_to_map(self):
+
+        s1 = List(1, 2, 3, 4)
+
+        self.assertEqual(Map([(1, 2), (2, 3), (3, 4), (4, 5)]), s1.toMap(lambda x: (x, x+1)))
+        self.assertEqual(Map([(1, 2), (2, 3), (3, 4), (4, 5)]), s1.toStream().toMap(lambda x: (x, x+1)))
+
+        self.assertEqual(Map([(1, 2), (2, 3), (3, 4), (4, 5)]), s1.to_map(lambda x: (x, x+1)))
+        self.assertEqual(Map([(1, 2), (2, 3), (3, 4), (4, 5)]), s1.toStream().to_map(lambda x: (x, x+1)))
+
+    def test_true(self):
+
+        s1 = List(1, "2", None, False, "")
+
+        self.assertEqual(List(1, "2"), s1.true())
+        self.assertEqual(List(1, "2"), s1.toStream().true())
+
+    def test_false(self):
+
+        s1 = List(1, "2", None, False, "")
+
+        self.assertEqual(List(None, False, ""), s1.false())
+        self.assertEqual(List(None, False, ""), s1.toStream().false())
+
+    def test_example1(self):
+        str1 = """blablabla@yandex.ru R=dnslookup T=remote_smtp H=mx.yandex.ru [127.0.0.1] X=TLS1.0:RSA_AES_256_CBC_SHA1:32"""
+        str2 = """<> R=1XSUTD-0008L9-Vn U=Debian-exim P=local S=5035 T="Mail delivery failed: returning message to sender" for noreply@example.com"""
+        import re
+
+        rs1 = List(*re.split(" (?=\w=)", str1)).filter(lambda x: x.count("=")).toMap(lambda x: x.split("=", 1))
+        self.assertEqual(dict(
+            R='dnslookup',
+            T='remote_smtp',
+            H='mx.yandex.ru [127.0.0.1]',
+            X='TLS1.0:RSA_AES_256_CBC_SHA1:32'
+        ), rs1)
+
+        rs2 = List(*re.split(" (?=\w=)", str2)).filter(lambda x: x.count("=")).toMap(lambda x: x.split("=", 1))
+        self.assertEqual(dict(
+            R='1XSUTD-0008L9-Vn',
+            U='Debian-exim',
+            P='local',
+            S='5035',
+            T='"Mail delivery failed: returning message to sender" for noreply@example.com'
+        ), rs2)
+        

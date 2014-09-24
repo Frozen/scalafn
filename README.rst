@@ -14,55 +14,37 @@ pip install git+git://github.com/Frozen/scalafn.git@master
 Usage
 =====
 
-
-Hello World:
-
-
 .. code-block:: python
-    # You can't use this code in ipython, because symbol _ means "last command". Use import _ as X
-    >>> from scalafn import List, _
-    >>> a = List(1, 2, 3)
-    >>> a.map(lambda x : x*2)
-    [2, 4, 6]
 
-    >>> a.map(_ * 2)
-    [2, 4, 6]
+    from scalafn import List
 
-    >>> a.map(_ / 2.0)
-    [0.5, 1, 1.5]
+    str1 = """blablabla@yandex.ru R=dnslookup """ \
+           """T=remote_smtp H=mx.yandex.ru [127.0.0.1] """ \
+           """X=TLS1.0:RSA_AES_256_CBC_SHA1:32"""
+    str2 = """<> R=1XSUTD-0008L9-Vn U=Debian-exim """ \
+           """P=local S=5035 T="Mail delivery failed: """ \
+           """returning message to sender" for noreply@example.com"""
+    import re
 
-    >>> a.map(6.0 / _)
-    [6.0, 3.0, 2.0]
+    rs1 = List(*re.split(" (?=\w=)", str1)).\
+        filter(lambda x: x.count("=")).\
+        toMap(lambda x: x.split("=", 1))
 
-    >>> a.map(_ + 1).map(_ * 5).filter(_ < 20)
-    [10, 15]
+    assert rs1 == dict(
+        R='dnslookup',
+        T='remote_smtp',
+        H='mx.yandex.ru [127.0.0.1]',
+        X='TLS1.0:RSA_AES_256_CBC_SHA1:32'
+    )
 
-    >>> a.filter(_ > 2)
-    [3]
+    rs2 = List(*re.split(" (?=\w=)", str2)).\
+        filter(lambda x: x.count("=")).\
+        toMap(lambda x: x.split("=", 1))
 
-    >>> a.filterNot(_ > 2)
-    [1, 2]
-
-    >>> List(0, 1, True, False, '').filter(_)
-    [1, True]
-
-    >>> class My():
-    >>>     def __init__(self, v):
-    >>>         self.v = v
-    >>>
-    >>>     def get_v(self):
-    >>>         return self.v
-
-    >>> b = List(My(0), My(1), My(2), My(3))
-
-    >>> b.map(_.v)
-    [0, 1, 2, 3]
-
-    >>> b.map(_.get_v())
-    [0, 1, 2, 3]
-
-    >>> b.filter(_.v)
-    [My(1), My(2), My(3)]
-
-    >>> b.filter(_.get_v() > 2)
-    [My(3)]
+    assert rs2 == dict(
+        R='1XSUTD-0008L9-Vn',
+        U='Debian-exim',
+        P='local',
+        S='5035',
+        T='"Mail delivery failed: returning message to sender" for noreply@example.com'
+    )

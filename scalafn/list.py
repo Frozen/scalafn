@@ -79,6 +79,9 @@ class ListGenerator(object):
     def to_set(self):
         return self.toList().to_set()
 
+    def toMap(self, func):
+        return self.toList().toMap(func)
+
     def partition(self, func):
 
         true = []
@@ -92,6 +95,15 @@ class ListGenerator(object):
 
         return List(*true), List(*false)
 
+
+
+    to_map = toMap
+
+    def true(self):
+        return self.filter(lambda x: x)
+
+    def false(self):
+        return self.filterNot(lambda x: x)
 
 
 class MultipleAdd():
@@ -188,6 +200,17 @@ class List(list):
 
     def to_set(self):
         return set(self)
+
+    def toMap(self, func):
+        return Map(self.map(func))
+
+    to_map = toMap
+
+    def true(self):
+        return self.filter(lambda x: x)
+
+    def false(self):
+        return self.filterNot(lambda x: x)
 
     def partition(self, func):
         return self.toStream().partition(func)
