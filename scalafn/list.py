@@ -90,6 +90,15 @@ class ListGenerator(object):
     def false(self):
         return self.filterNot(lambda x: x)
 
+    def take(self, n):
+        return self.toList().take(n)
+
+    def fold(self, initial, func):
+
+        for i in self:
+            initial += func(initial, i)
+        return initial
+
 
 class MultipleAdd():
 
@@ -196,6 +205,13 @@ class List(list):
 
     def false(self):
         return self.filterNot(lambda x: x)
+
+    def take(self, n):
+        return self[:n]
+
+    def fold(self, initial, func):
+        return self.toStream().fold(initial, func)
+
 
 class String():
 

@@ -194,3 +194,19 @@ class TestList(TestCase):
             T='"Mail delivery failed: returning message to sender" for noreply@example.com'
         ), rs2)
         # list(filter(lambda x: x.count("="), re.split(" (?=\w=)", message)))
+
+    def test_take(self):
+
+        self.assertEqual([1, 2], List(1, 2, 3, 4, 5).take(2))
+        self.assertEqual([1, 2], List(1, 2, 3, 4, 5).toStream().take(2))
+
+        self.assertEqual([], List().take(2))
+        self.assertEqual([], List().toStream().take(2))
+
+    def test_fold(self):
+
+        self.assertEqual(57, List(1, 2, 3, 4, 5).fold(0, lambda prev, current: prev+current))
+        self.assertEqual(57, List(1, 2, 3, 4, 5).toStream().fold(0, lambda prev, current: prev+current))
+
+        self.assertEqual("12345", List(1, 2, 3, 4, 5).fold('', lambda prev, current: str(current)))
+
