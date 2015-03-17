@@ -13,3 +13,15 @@ class Map(dict):
             new_map.append(func(k, v))
 
         return Map(new_map)
+
+    def __sub__(self, other):
+        """
+        Substraction
+
+        assert Map({1: 2, 3: 4}) - 3 == Map({1: 2})
+
+        :param other:
+        :return:
+        """
+        self.pop(other, None)
+        return self

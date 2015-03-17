@@ -22,3 +22,8 @@ class TestListFunctional(TestCase):
             'B': [0, 1, 4, 5]
         }, m.map(lambda x, y: (x, sorted(y))))
 
+    def test_sub(self):
+
+        self.assertEqual(Map({1: 2}), Map({1: 2, 3: 4}) - 3)
+        self.assertEqual(Map({1: 2}), Map({1: 2}) - 3)
+
